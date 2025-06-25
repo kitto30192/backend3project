@@ -1,35 +1,21 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import { connectDB, WebsiteTrack } from '../db.js';
+import { connectDB, WebsiteTrack } from './db.js';
 import dns from 'dns';
 import { URL } from 'url';
 import serverless from 'serverless-http';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 dotenv.config();
 
 const app = express();
-
-// Required for __dirname in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files like /style.css
-app.use(express.static(path.join(__dirname, '../public')));
-
-// Serve HTML file on GET /
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../views/index.html'));
-});
-
-// POST /shorturl (NOT /api/shorturl — Vercel adds /api/)
+// API: POST /shorturl
 app.post('/shorturl', async (req, res) => {
   try {
     await connectDB();
@@ -52,7 +38,7 @@ app.post('/shorturl', async (req, res) => {
   }
 });
 
-// GET /shorturl/:short_url
+// API: GET /shorturl/:short_url
 app.get('/shorturl/:short_url', async (req, res) => {
   try {
     await connectDB();
@@ -66,8 +52,9 @@ app.get('/shorturl/:short_url', async (req, res) => {
   }
 });
 
-// Wrap for Vercel
 export default serverless(app);
+
+
 
 
 
