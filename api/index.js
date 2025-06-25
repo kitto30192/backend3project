@@ -1,13 +1,12 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import WebsiteTrack from '../db.js';
+import { connectDB, WebsiteTrack } from '../db.js';
 import dns from 'dns';
 import { URL } from 'url';
 import serverless from 'serverless-http';
 
 dotenv.config();
-
 const app = express();
 
 app.use(cors());
@@ -20,6 +19,8 @@ app.get('/', (req, res) => {
 
 app.post('/api/shorturl', async (req, res) => {
   try {
+    await connectDB(); // ✅ IMPORTANT
+
     const { url } = req.body;
     if (!url) return res.status(400).json({ error: 'URL is required' });
 
@@ -40,6 +41,8 @@ app.post('/api/shorturl', async (req, res) => {
 
 app.get('/api/shorturl/:short_url', async (req, res) => {
   try {
+    await connectDB(); // ✅ IMPORTANT
+
     const entry = await WebsiteTrack.findOne({ shorturl: parseInt(req.params.short_url) });
     if (!entry) return res.status(404).json({ error: 'No short URL found' });
 
@@ -49,7 +52,6 @@ app.get('/api/shorturl/:short_url', async (req, res) => {
   }
 });
 
-// ✅ Wrap Express app for Vercel
 export default serverless(app);
 
 
