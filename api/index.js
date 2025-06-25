@@ -5,21 +5,34 @@ import { connectDB, WebsiteTrack } from '../db.js';
 import dns from 'dns';
 import { URL } from 'url';
 import serverless from 'serverless-http';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
+
 const app = express();
 
+// Required for __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files like /style.css
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Serve HTML file on GET /
 app.get('/', (req, res) => {
-  res.send('Hello from Express on Vercel!');
+  res.sendFile(path.join(__dirname, '../views/index.html'));
 });
 
-app.post('/api/shorturl', async (req, res) => {
+// POST /shorturl (NOT /api/shorturl — Vercel adds /api/)
+app.post('/shorturl', async (req, res) => {
   try {
-    await connectDB(); // ✅ IMPORTANT
+    await connectDB();
 
     const { url } = req.body;
     if (!url) return res.status(400).json({ error: 'URL is required' });
@@ -39,9 +52,10 @@ app.post('/api/shorturl', async (req, res) => {
   }
 });
 
-app.get('/api/shorturl/:short_url', async (req, res) => {
+// GET /shorturl/:short_url
+app.get('/shorturl/:short_url', async (req, res) => {
   try {
-    await connectDB(); // ✅ IMPORTANT
+    await connectDB();
 
     const entry = await WebsiteTrack.findOne({ shorturl: parseInt(req.params.short_url) });
     if (!entry) return res.status(404).json({ error: 'No short URL found' });
@@ -52,7 +66,9 @@ app.get('/api/shorturl/:short_url', async (req, res) => {
   }
 });
 
+// Wrap for Vercel
 export default serverless(app);
+
 
 
 
