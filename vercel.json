@@ -2,20 +2,22 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/**/*.js",
+      "src": "index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/api/shorturl/([0-9]+)",
-      "methods": ["GET"],
-      "dest": "api/shorturl/[id].js"
+      "src": "/public/(.*)",
+      "dest": "/public/$1"
     },
     {
-      "src": "/api/shorturl",
-      "methods": ["POST"],
-      "dest": "api/shorturl.js"
+      "src": "/views/(.*)",
+      "dest": "/views/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "index.js"
     }
   ]
 }
